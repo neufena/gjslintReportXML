@@ -4,6 +4,13 @@ $ignore = array(
     'E:0110'
 );
 
+$invalidChars = array(
+	'"' => '\'',
+	'&' => '&amp;',
+	'>' => '&gt;',
+	'<' => '&lt;'
+);
+
 if (!isset($_SERVER['argv'][1]) || !isset($_SERVER['argv'][2])) {
     echo 'Usage:- php gjslintReport.php [inputFile] [outputFile]';
     die();
@@ -37,8 +44,7 @@ foreach ($errors as $fileName => $issues) {
     $xml .= '<file name="' . $fileName . '">';
     foreach ($issues as $issue) {
         $xml .= '<issue line="' . $issue['line'] . '" severity="' .
-                $issue['severity'] . '" reason="' . str_replace('"', "'",
-                        $issue['reason']) . '"/>';
+                $issue['severity'] . '" reason="' . removeInvalidChars($issue['reason'], $invalidChars) . '"/>';
     }
     $xml .= '</file>';
 }
@@ -48,5 +54,15 @@ $xml .='</jslint>';
 $handle = fopen($_SERVER['argv'][2], "w");
 fwrite($handle, $xml);
 
-fclose($handle)
+fclose($handle);
+
+function removeInvalidChars($text, $invalidChars) {
+	$result = $text;
+	
+	foreach ($invalidChars as $invalid => $valid) {
+		$result = str_replace($invalid, $valid, $result);
+	}
+	
+	return $result;
+}
 ?>
